@@ -110,6 +110,7 @@ func goroutineCommunication() {
 
 	// Create a channel for communication
 	messageChan := make(chan string, 3) // Buffered channel
+	var wg sync.WaitGroup
 
 	// Producer goroutine
 	go func() {
@@ -123,7 +124,9 @@ func goroutineCommunication() {
 	}()
 
 	// Consumer goroutine
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for msg := range messageChan {
 			fmt.Printf("  Consumer received: %s\n", msg)
 			time.Sleep(50 * time.Millisecond)
@@ -132,7 +135,7 @@ func goroutineCommunication() {
 	}()
 
 	// Wait for communication to complete
-	time.Sleep(1000 * time.Millisecond)
+	wg.Wait()
 	fmt.Println("Goroutine communication completed!")
 	fmt.Println()
 }
@@ -144,6 +147,7 @@ func goroutineErrorHandling() {
 
 	// Error channel for collecting errors
 	errChan := make(chan error, 2)
+	var wg sync.WaitGroup
 
 	// Goroutine with panic recovery
 	go func() {
@@ -168,7 +172,9 @@ func goroutineErrorHandling() {
 	}()
 
 	// Collect errors
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for i := 0; i < 2; i++ {
 			select {
 			case err := <-errChan:
@@ -179,7 +185,7 @@ func goroutineErrorHandling() {
 		}
 	}()
 
-	time.Sleep(300 * time.Millisecond)
+	wg.Wait()
 	fmt.Println("Goroutine error handling completed!")
 	fmt.Println()
 }
